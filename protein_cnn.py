@@ -68,9 +68,9 @@ def train(model, optimizer, loss, x_train, y_train, x_val, y_val, iterations):
         # Updating model
         train_loss.backward()
         optimizer.step()
-        train_loss = train_loss.item()
+        tr_loss = train_loss.item()
         val_loss = val_loss.item()
         # printing the validation loss
-        print('Epoch : ', iteration + 1, '\t', 'loss :', val_loss)
+        print('Epoch : ', iteration + 1, '\n    Train Loss:', tr_loss, '\n    Valid Loss:', val_loss)
 
     return train_losses, val_losses

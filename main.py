@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
 import torch
@@ -14,7 +14,7 @@ def main():
     max_sequence_length = 64
     iterations = 100
 
-    n_samples = 10
+    n_samples = 100
     x_train = np.random.rand(n_samples, 1, max_sequence_length, n_encodings)
     y_train = np.zeros((n_samples, 1))
     for i in range(n_samples):
