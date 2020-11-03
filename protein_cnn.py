@@ -12,7 +12,7 @@ from torch.optim import Adam
 #                       how many layers/what layers
 #                       linear layers output
 class Net(Module):   
-    def __init__(self, n_encodings, max_sequence_length):
+    def __init__(self):
         super(Net, self).__init__()
 
         self.cnn_layers = Sequential(
@@ -74,3 +74,4 @@ def train(model, optimizer, loss, x_train, y_train, x_val, y_val, iterations):
         print('Epoch : ', iteration + 1, '\n    Train Loss:', tr_loss, '\n    Valid Loss:', val_loss)
 
     return train_losses, val_losses
+    

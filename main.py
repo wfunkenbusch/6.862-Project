@@ -1,4 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import numpy as np
+from scipy import sparse
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
@@ -7,12 +11,19 @@ from torch.nn import Linear, ReLU, MSELoss, Sequential, Conv2d, MaxPool2d, Modul
 from torch.optim import Adam
 
 from protein_cnn import *
+from supp_fun import *
 # Ligand/Proteins pairs will be converted into [N_samples, 1, max_sequence_size, number_of_encodings]
 
 def main():
-    n_encodings = 64
-    max_sequence_length = 64
+    n_encodings = 48
+    max_sequence_length = 1100
     iterations = 100
+
+    x_data = np.load('x_data.npy')
+    y_data = np.load('y_data.npy')
+
+    x_train = one_hot_encode(x_data, n_encodings)
+    y_train = y_data
 
     n_samples = 100
     x_train = np.random.rand(n_samples, 1, max_sequence_length, n_encodings)
@@ -20,6 +31,8 @@ def main():
     for i in range(n_samples):
         x_train_i = x_train[i, :, :, :].reshape(max_sequence_length, n_encodings)
         y_train[i] = np.sum(x_train_i[0:10, :])/np.sum(x_train_i[10:, :])
+
+    x_train = sparse.coo_matrix(x_train)
 
     # Get data and split into training and validation
     x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size = 0.1)
@@ -29,7 +42,7 @@ def main():
     y_val = torch.from_numpy(y_val).float()
 
     # Model Initialization
-    model = Net(n_encodings, max_sequence_length)
+    model = Net()
     optimizer = Adam(model.parameters(), lr = 0.1)
     loss = MSELoss()
 
