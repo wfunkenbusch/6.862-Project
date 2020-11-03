@@ -8,9 +8,6 @@ from torch.autograd import Variable
 from torch.nn import Linear, ReLU, CrossEntropyLoss, Sequential, Conv2d, MaxPool2d, Module, BatchNorm2d, Dropout
 from torch.optim import Adam
 
-### Need to figure out: padding
-#                       how many layers/what layers
-#                       linear layers output
 class Net(Module):   
     def __init__(self):
         super(Net, self).__init__()
@@ -56,6 +53,12 @@ def train(model, optimizer, loss, x_train, y_train, x_val, y_val, iterations):
     # Getting the data
     x_train, y_train = Variable(x_train), Variable(y_train)
     x_val, y_val = Variable(x_val), Variable(y_val)
+
+    if torch.cuda.is_available():
+        x_train = x_train.cuda()
+        y_train = y_train.cuda()
+        x_val = x_val.cuda()
+        y_val = y_val.cuda()
 
     for iteration in range(iterations):
         optimizer.zero_grad()

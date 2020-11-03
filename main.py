@@ -43,6 +43,10 @@ def main():
     model = Net()
     optimizer = Adam(model.parameters(), lr = 0.1)
     loss = MSELoss()
+    
+    if torch.cuda.is_available():
+        model = model.cuda()
+        loss = loss.cuda()
 
     # Model Training
     train_losses, val_losses = train(model, optimizer, loss, x_train, y_train, x_val, y_val, iterations)
