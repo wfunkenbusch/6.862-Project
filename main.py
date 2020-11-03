@@ -25,14 +25,12 @@ def main():
     x_train = one_hot_encode(x_data, n_encodings)
     y_train = y_data
 
-    n_samples = 100
-    x_train = np.random.rand(n_samples, 1, max_sequence_length, n_encodings)
-    y_train = np.zeros((n_samples, 1))
-    for i in range(n_samples):
-        x_train_i = x_train[i, :, :, :].reshape(max_sequence_length, n_encodings)
-        y_train[i] = np.sum(x_train_i[0:10, :])/np.sum(x_train_i[10:, :])
-
-    x_train = sparse.coo_matrix(x_train)
+    #n_samples = 100
+    #x_train = np.random.rand(n_samples, 1, max_sequence_length, n_encodings)
+    #y_train = np.zeros((n_samples, 1))
+    #for i in range(n_samples):
+    #    x_train_i = x_train[i, :, :, :].reshape(max_sequence_length, n_encodings)
+    #    y_train[i] = np.sum(x_train_i[0:10, :])/np.sum(x_train_i[10:, :])
 
     # Get data and split into training and validation
     x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size = 0.1)

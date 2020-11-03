@@ -13,6 +13,6 @@ def one_hot_encode(x_data, n_encodings):
 
     for i in range(x_data.shape[0]):
         for j in range(x_data.shape[1]):
-            output[i, 1, j, x_data[i, j]] = 1
+            output[i, 0, j, int(x_data[i, j])] = 1
 
     return output

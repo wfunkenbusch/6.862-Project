@@ -16,23 +16,29 @@ class Net(Module):
         super(Net, self).__init__()
 
         self.cnn_layers = Sequential(
-            Conv2d(1, 128, kernel_size = (3, 3), stride = 1, padding = 1), #2D convolutional layer
+            # [N_data, 1, sequence_length, n_encodings]
+            Conv2d(1, 128, kernel_size = (7, 48), stride = 1, padding = (3, 0)), #2D convolutional layer
             BatchNorm2d(128),
             ReLU(inplace = True),
-            MaxPool2d(kernel_size = 2, stride = 2),
+            # [N_data, 128, sequence_length, 1]
+            MaxPool2d(kernel_size = (2, 1), stride = 2),
+            # [N_data, 128, sequence_length/2, 1]
 
-            Conv2d(128, 128, kernel_size = (3, 3), stride = 1, padding = 1),
+            Conv2d(128, 128, kernel_size = (3, 1), stride = 1, padding = 1),
             BatchNorm2d(128),
             ReLU(inplace = True),
-            MaxPool2d(kernel_size = 2, stride = 2),
+            MaxPool2d(kernel_size = (2, 1), stride = 2),
+            # [N_data, 128, sequence_length/4, 1]
 
-            Conv2d(128, 128, kernel_size = (3, 3), stride = 1, padding = 1),
+            Conv2d(128, 128, kernel_size = (3, 1), stride = 1, padding = 1),
             BatchNorm2d(128),
             ReLU(inplace = True),
-            MaxPool2d(kernel_size = 2, stride = 2))
+            MaxPool2d(kernel_size = (2, 1), stride = 2))
+            # [N_data, 128, sequence_length/8, 1]
 
         self.linear_layers = Sequential(
-            Linear(int(128 * n_encodings/8 * max_sequence_length/8), 1),
+            Linear(int(128 * 138), 1024),
+            Linear(1024, 1)
         )
 
     # Defining the forward pass    

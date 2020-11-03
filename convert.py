@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from scipy import sparse
 
-data = pd.read_excel('curated_df_11_3.xlsx')
+data = pd.read_excel('curated_df.xlsx')
 
 SMILES = data['SMILES']
 protein = data['Protein']
@@ -47,11 +47,11 @@ for i in range(N_data):
             encoded_data[i, j] = 8
         elif char == 'o':
             encoded_data[i, j] = 9
-        elif char == 'SILICON':
+        elif char == '*': # Silicon
             encoded_data[i, j] = 10
         elif char == 'F':
             encoded_data[i, j] = 11
-        elif char == 'K':
+        elif char == '!': # Chlorine
             encoded_data[i, j] = 12
         elif char == 'B':
             encoded_data[i, j] = 13
@@ -86,7 +86,8 @@ for i in range(N_data):
         elif char == '-':
             encoded_data[i, j] = 28
         else:
-            print(char)  
+            print(char)
+            print(i) 
 
 # Same as above but for AA sequence
 for i in range(N_data):
