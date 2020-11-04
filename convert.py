@@ -142,5 +142,5 @@ for i in range(N_data):
         else:
             print(char)
 
-np.save('x_data.npy', encoded_data)
-np.save('y_data.npy', Ki)
+np.save('x_data.npy', encoded_data[0:1000])
+np.save('y_data.npy', Ki[0:1000])

@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 
 import torch
 from torch.autograd import Variable
-from torch.nn import Linear, ReLU, CrossEntropyLoss, Sequential, Conv2d, MaxPool2d, Module, BatchNorm2d, Dropout
+from torch.nn import Linear, ReLU, CrossEntropyLoss, Sequential, Conv2d, MaxPool2d, Module, BatchNorm2d
 from torch.optim import Adam
 
 class Net(Module):   
@@ -14,27 +14,27 @@ class Net(Module):
 
         self.cnn_layers = Sequential(
             # [N_data, 1, sequence_length, n_encodings]
-            Conv2d(1, 128, kernel_size = (7, 48), stride = 1, padding = (3, 0)), #2D convolutional layer
+            Conv2d(1, 128, kernel_size = (11, 48), stride = 1, padding = (5, 0)), #2D convolutional layer
             BatchNorm2d(128),
             ReLU(inplace = True),
             # [N_data, 128, sequence_length, 1]
             MaxPool2d(kernel_size = (2, 1), stride = 2),
             # [N_data, 128, sequence_length/2, 1]
 
-            Conv2d(128, 128, kernel_size = (3, 1), stride = 1, padding = 1),
+            Conv2d(128, 128, kernel_size = (3, 1), stride = 1, padding = (1, 0)),
             BatchNorm2d(128),
             ReLU(inplace = True),
             MaxPool2d(kernel_size = (2, 1), stride = 2),
             # [N_data, 128, sequence_length/4, 1]
 
-            Conv2d(128, 128, kernel_size = (3, 1), stride = 1, padding = 1),
+            Conv2d(128, 128, kernel_size = (3, 1), stride = 1, padding = (1, 0)),
             BatchNorm2d(128),
             ReLU(inplace = True),
             MaxPool2d(kernel_size = (2, 1), stride = 2))
             # [N_data, 128, sequence_length/8, 1]
 
         self.linear_layers = Sequential(
-            Linear(int(128 * 138), 1024),
+            Linear(int(128 * 137), 1024),
             Linear(1024, 1)
         )
 
