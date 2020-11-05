@@ -1,2 +1,6 @@
 x_data.npy
 y_data.npy
+*.pt
+.DS_Store
+.Rhistory
+BindingDB_PDSPKi3.tsv

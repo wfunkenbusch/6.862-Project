@@ -45,42 +45,43 @@ class Net(Module):
         x = self.linear_layers(x)
         return x
 
-def train(model, optimizer, loss, x_train, y_train, x_val, y_val, iterations):
+def train(model, optimizer, loss, x_train, y_train, x_val, y_val, epochs, train_losses, val_losses):
     model.train()
-    train_losses = []
-    val_losses = []
 
-    # Getting the data
+    # Getting Data
     x_train, y_train = Variable(x_train), Variable(y_train)
     x_val, y_val = Variable(x_val), Variable(y_val)
 
+    # GPU Support
     if torch.cuda.is_available():
         x_train = x_train.cuda()
         y_train = y_train.cuda()
         x_val = x_val.cuda()
         y_val = y_val.cuda()
 
-    for iteration in range(iterations):
+    for epoch in range(epochs):
+        # Initialize Gradient
         optimizer.zero_grad()
         
-        # Current model predictions
+        # Current Model Predictions
         output_train = model(x_train)
         output_val = model(x_val)
 
-        # Current model losses
+        # Current Model Losses
         train_loss = loss(output_train, y_train)
         val_loss = loss(output_val, y_val)
 
         train_losses.append(train_loss)
         val_losses.append(val_loss)
 
-        # Updating model
+        # Back Propagation
         train_loss.backward()
         optimizer.step()
+
+        # Displaying Losses
         tr_loss = train_loss.item()
         val_loss = val_loss.item()
-        # printing the validation loss
-        print('Epoch : ', iteration + 1, '\n    Train Loss:', tr_loss, '\n    Valid Loss:', val_loss)
+        print('Epoch : ', epoch + 1, '\n    Train Loss:', tr_loss, '\n    Valid Loss:', val_loss)
 
     return train_losses, val_losses
     
