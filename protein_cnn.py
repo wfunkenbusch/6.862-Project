@@ -41,34 +41,34 @@ class Net(Module):
             MaxPool1d(kernel_size = 3, stride = 3),
             # [N_data, 256, sequence_length/27]
 
-            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 2),
+            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 1),
             BatchNorm1d(256),
             ReLU(inplace = True),
 
-            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 2),
+            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 1),
             BatchNorm1d(256),
             ReLU(inplace = True),
 
-            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 2),
+            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 1),
             BatchNorm1d(256),
             ReLU(inplace = True),
 
-            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 2),
+            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 1),
             BatchNorm1d(256),
             ReLU(inplace = True),
 
-            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 2),
+            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 1),
             BatchNorm1d(256),
             ReLU(inplace = True),
 
-            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 2),
+            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 1),
             BatchNorm1d(256),
             ReLU(inplace = True),
             MaxPool1d(kernel_size = 3, stride = 3)
             )
 
         self.linear_layers = Sequential(
-            Linear(int(256 * 27), 2048),
+            Linear(int(256 * 13), 2048),
             Dropout(0.5),
             Linear(2048, 2048),
             Dropout(0.5),
