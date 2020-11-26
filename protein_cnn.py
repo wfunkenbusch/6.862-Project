@@ -1,51 +1,90 @@
 import numpy as np
 import math
-import matplotlib
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 
 import torch
 from torch.autograd import Variable
-from torch.nn import Linear, ReLU, CrossEntropyLoss, Sequential, Conv2d, MaxPool2d, Module, BatchNorm2d
+from torch.nn import Linear, ReLU, CrossEntropyLoss, Sequential, Conv2d, MaxPool2d, Module, BatchNorm2d, Dropout, Conv1d, MaxPool1d, BatchNorm1d
 from torch.optim import Adam
+
+from supp_fun import one_hot_encode
 
 class Net(Module):   
     def __init__(self):
         super(Net, self).__init__()
 
-        self.cnn_layers = Sequential(
+        self.cnn_initial = Sequential(
             # [N_data, 1, sequence_length, n_encodings]
-            Conv2d(1, 128, kernel_size = (11, 48), stride = 1, padding = (5, 0)), #2D convolutional layer
-            BatchNorm2d(128),
+            Conv2d(1, 256, kernel_size = (7, 48), stride = 1, padding = (3, 0)), #2D convolutional layer
+            BatchNorm2d(256),
             ReLU(inplace = True),
-            # [N_data, 128, sequence_length, 1]
-            MaxPool2d(kernel_size = (2, 1), stride = 2),
-            # [N_data, 128, sequence_length/2, 1]
+            # [N_data, 256, sequence_length, 1]
+            )
 
-            Conv2d(128, 128, kernel_size = (3, 1), stride = 1, padding = (1, 0)),
-            BatchNorm2d(128),
+        self.cnn_final = Sequential(
+            Conv1d(256, 256, kernel_size = 7, stride = 1, padding = 3),
+            BatchNorm1d(256),
             ReLU(inplace = True),
-            MaxPool2d(kernel_size = (2, 1), stride = 2),
-            # [N_data, 128, sequence_length/4, 1]
+            MaxPool1d(kernel_size = 3, stride = 3),
+            # [N_data, 256, sequence_length/3]
 
-            Conv2d(128, 128, kernel_size = (3, 1), stride = 1, padding = (1, 0)),
-            BatchNorm2d(128),
+            Conv1d(256, 256, kernel_size = 7, stride = 1, padding = 3),
+            BatchNorm1d(256),
             ReLU(inplace = True),
-            MaxPool2d(kernel_size = (2, 1), stride = 2))
-            # [N_data, 128, sequence_length/8, 1]
+            MaxPool1d(kernel_size = 3, stride = 3),
+            # [N_data, 256, sequence_length/9]
+
+            Conv1d(256, 256, kernel_size = 7, stride = 1, padding = 3),
+            BatchNorm1d(256),
+            ReLU(inplace = True),
+            MaxPool1d(kernel_size = 3, stride = 3),
+            # [N_data, 256, sequence_length/27]
+
+            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 2),
+            BatchNorm1d(256),
+            ReLU(inplace = True),
+
+            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 2),
+            BatchNorm1d(256),
+            ReLU(inplace = True),
+
+            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 2),
+            BatchNorm1d(256),
+            ReLU(inplace = True),
+
+            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 2),
+            BatchNorm1d(256),
+            ReLU(inplace = True),
+
+            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 2),
+            BatchNorm1d(256),
+            ReLU(inplace = True),
+
+            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 2),
+            BatchNorm1d(256),
+            ReLU(inplace = True),
+            MaxPool1d(kernel_size = 3, stride = 3)
+            )
 
         self.linear_layers = Sequential(
-            Linear(int(128 * 137), 1024),
-            Linear(1024, 1)
+            Linear(int(256 * 27), 2048),
+            Dropout(0.5),
+            Linear(2048, 2048),
+            Dropout(0.5),
+            Linear(2048, 1)
         )
 
     # Defining the forward pass    
     def forward(self, x):
-        x = self.cnn_layers(x)
+        x = self.cnn_initial(x)
+        x = torch.reshape(x, (x.shape[0], x.shape[1], x.shape[2]))
+        x = self.cnn_final(x)
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
         return x
 
-def train(model, optimizer, loss, x_train, y_train, x_val, y_val, epochs, train_losses, val_losses):
+def train(model, optimizer, loss, x_train, y_train, x_val, y_val, epoch, epochs, train_losses, val_losses):
     model.train()
 
     # Getting Data
@@ -59,29 +98,49 @@ def train(model, optimizer, loss, x_train, y_train, x_val, y_val, epochs, train_
         x_val = x_val.cuda()
         y_val = y_val.cuda()
 
-    for epoch in range(epochs):
+    for i in range(epochs):
         # Initialize Gradient
         optimizer.zero_grad()
         
+        # Only train on part of data at each step
+        x_train_cut, _, y_train_cut, _ = train_test_split(x_train, y_train, test_size = x_train.shape[0] - 500)
+        x_val_cut, _, y_val_cut, _ = train_test_split(x_val, y_val, test_size = x_val.shape[0] - 500)
+
         # Current Model Predictions
-        output_train = model(x_train)
-        output_val = model(x_val)
+        output_train = model(x_train_cut)
+        output_val = model(x_val_cut)
 
         # Current Model Losses
-        train_loss = loss(output_train, y_train)
-        val_loss = loss(output_val, y_val)
+        train_loss = loss(output_train, y_train_cut)
+        val_loss = loss(output_val, y_val_cut)
 
-        train_losses.append(train_loss)
-        val_losses.append(val_loss)
+        train_losses.append(train_loss.item())
+        val_losses.append(val_loss.item())
 
         # Back Propagation
         train_loss.backward()
         optimizer.step()
 
+        # Emptying Cache
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
         # Displaying Losses
         tr_loss = train_loss.item()
         val_loss = val_loss.item()
-        print('Epoch : ', epoch + 1, '\n    Train Loss:', tr_loss, '\n    Valid Loss:', val_loss)
+        print('Epoch : ', epoch + i + 1, '\n    Train Loss:', tr_loss, '\n    Valid Loss:', val_loss)
+
+        if i % 100 == 0:
+            torch.save({'epochs': epoch + epochs,
+                        'model_state_dict': optimizer.state_dict(),
+                        'loss': loss,
+                        'x_train': x_train,
+                        'y_train': y_train,
+                        'x_val': x_val,
+                        'y_val': y_val,
+                        'train_losses': train_losses,
+                        'val_losses': val_losses
+                        }, 'model.pt')
 
     return train_losses, val_losses
     

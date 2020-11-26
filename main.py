@@ -18,7 +18,8 @@ def main():
     # Input parameters
     n_encodings = 48
     max_sequence_length = 1100
-    epochs = 45
+    epoch = 0
+    epochs = 10000
     lr = 1e-5
     test_size = 0.1
     train_losses = []
@@ -30,13 +31,13 @@ def main():
     loss = MSELoss()
 
     ############## If Training New Model
-'''
     # Load data
     x_data = np.load('x_data.npy')
     y_data = np.load('y_data.npy')
 
     # Convert to proper format
     x_train = one_hot_encode(x_data, n_encodings)
+    #x_train = x_data
     y_train = np.log(y_data)
 
     del x_data
@@ -48,9 +49,9 @@ def main():
     y_train = torch.from_numpy(y_train).float()
     x_val = torch.from_numpy(x_val).float()
     y_val = torch.from_numpy(y_val).float()
-'''
 
     ############## If Loading from Previous Run
+    '''
     checkpoint = torch.load('model.pt')
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
@@ -62,6 +63,7 @@ def main():
     y_val = checkpoint['y_val']
     train_losses = checkpoint['train_losses']
     val_losses = checkpoint['val_losses']
+    '''
 
     # GPU Support
     if torch.cuda.is_available():
@@ -69,11 +71,12 @@ def main():
         loss = loss.cuda()
 
     # Model Training
-    train_losses, val_losses = train(model, optimizer, loss, x_train, y_train, x_val, y_val, epochs, train_losses, val_losses)
+    model.train()
+    train_losses, val_losses = train(model, optimizer, loss, x_train, y_train, x_val, y_val, epoch, epochs, train_losses, val_losses)
 
     # Saving Results
     torch.save({
-            'epochs': epochs,
+            'epochs': epoch + epochs,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             'loss': loss,
