@@ -36,19 +36,20 @@ def main():
     y_data = np.load('y_data.npy')
 
     # Convert to proper format
-    x_train = one_hot_encode(x_data, n_encodings)
-    #x_train = x_data
-    y_train = np.log(y_data)
+    #x_train = one_hot_encode(x_data, n_encodings)
+    x_train = x_data
+    #y_train = np.log10(y_data)
+    y_train = y_data
 
     del x_data
     del y_data
 
     # Get data and split into training and validation
     x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size = test_size)
-    x_train = torch.from_numpy(x_train).float()
-    y_train = torch.from_numpy(y_train).float()
-    x_val = torch.from_numpy(x_val).float()
-    y_val = torch.from_numpy(y_val).float()
+    #x_train = torch.from_numpy(x_train).float()
+    #y_train = torch.from_numpy(y_train).float()
+    #x_val = torch.from_numpy(x_val).float()
+    #y_val = torch.from_numpy(y_val).float()
 
     ############## If Loading from Previous Run
     '''
