@@ -19,7 +19,7 @@ def main():
     n_encodings = 48
     max_sequence_length = 1100
     epoch = 0
-    epochs = 10000
+    epochs = 5000
     lr = 1e-5
     test_size = 0.1
     train_losses = []
@@ -36,9 +36,7 @@ def main():
     y_data = np.load('y_data.npy')
 
     # Convert to proper format
-    #x_train = one_hot_encode(x_data, n_encodings)
     x_train = x_data
-    #y_train = np.log10(y_data)
     y_train = y_data
 
     del x_data
@@ -46,10 +44,6 @@ def main():
 
     # Get data and split into training and validation
     x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size = test_size)
-    #x_train = torch.from_numpy(x_train).float()
-    #y_train = torch.from_numpy(y_train).float()
-    #x_val = torch.from_numpy(x_val).float()
-    #y_val = torch.from_numpy(y_val).float()
 
     ############## If Loading from Previous Run
     '''
@@ -66,13 +60,12 @@ def main():
     val_losses = checkpoint['val_losses']
     '''
 
-    # GPU Support
+    # Check for GPU Support
     if torch.cuda.is_available():
         model = model.cuda()
         loss = loss.cuda()
 
     # Model Training
-    model.train()
     train_losses, val_losses = train(model, optimizer, loss, x_train, y_train, x_val, y_val, epoch, epochs, train_losses, val_losses)
 
     # Saving Results
@@ -101,10 +94,19 @@ def main():
 
     # Plotting predicted vs actual values post-training
     model.eval()
-    y_pred = model(x_val)
+
+    # For RAM purposes, need to split validation data into two parts
+    x_val1, x_val2, y_val1, y_val2 = train_test_split(x_val, y_val, test_size = 0.5)
+
+    # Model prediction values
+    y_pred1 = model(x_val1)
+    y_pred2 = model(x_val2)
+
+    # Plotting
     plt.figure()
     plt.plot(range(-2, 12), range(-2, 12))
-    plt.scatter(y_val.detach().numpy(), y_pred.detach().numpy(), c = 'k')
+    plt.scatter(y_val1.detach().numpy(), y_pred1.detach().numpy(), c = 'k')
+    plt.scatter(y_val2.detach().numpy(), y_pred2.detach().numpy(), c = 'k')
     plt.grid()
     plt.xlabel('Actual log(K_i)')
     plt.ylabel('Predicted log(K_i)')
