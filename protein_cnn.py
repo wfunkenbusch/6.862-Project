@@ -14,58 +14,60 @@ class Net(Module):
     def __init__(self):
         super(Net, self).__init__()
 
-        self.cnn_initial = Sequential(
+        self.cnn_layers = Sequential(
             # [N_data, 1, sequence_length, n_encodings]
             Conv2d(1, 256, kernel_size = (7, 48), stride = 1, padding = (3, 0)), #2D convolutional layer
             BatchNorm2d(256),
             ReLU(inplace = True),
-            # [N_data, 256, sequence_length, 1]
-            )
+            MaxPool2d(kernel_size = (3, 1), stride = (3, 1)),
+            Permute(),
+            # [N_data, 256, sequence_length/3, 1]
 
-        self.cnn_final = Sequential(
-            Conv1d(256, 256, kernel_size = 7, stride = 1, padding = 3),
-            BatchNorm1d(256),
+            Conv2d(1, 256, kernel_size = (7, 256), stride = 1, padding = (3, 0)),
+            BatchNorm2d(256),
             ReLU(inplace = True),
-            MaxPool1d(kernel_size = 3, stride = 3),
-            # [N_data, 256, sequence_length/3]
+            MaxPool2d(kernel_size = (3, 1), stride = (3, 1)),
+            Permute(),
+            # [N_data, 256, sequence_length/9, 1]
 
-            Conv1d(256, 256, kernel_size = 7, stride = 1, padding = 3),
-            BatchNorm1d(256),
+            Conv2d(1, 256, kernel_size = (7, 256), stride = 1, padding = (3, 0)),
+            BatchNorm2d(256),
             ReLU(inplace = True),
-            MaxPool1d(kernel_size = 3, stride = 3),
-            # [N_data, 256, sequence_length/9]
+            MaxPool2d(kernel_size = (3, 1), stride = (3, 1)),
+            Permute(),
+            # [N_data, 256, sequence_length/27, 1]
 
-            Conv1d(256, 256, kernel_size = 7, stride = 1, padding = 3),
-            BatchNorm1d(256),
+            Conv2d(1, 256, kernel_size = (3, 256), stride = 1, padding = (1, 0)),
+            BatchNorm2d(256),
             ReLU(inplace = True),
-            MaxPool1d(kernel_size = 3, stride = 3),
-            # [N_data, 256, sequence_length/27]
+            Permute(),
 
-            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 1),
-            BatchNorm1d(256),
+            Conv2d(1, 256, kernel_size = (3, 256), stride = 1, padding = (1, 0)),
+            BatchNorm2d(256),
             ReLU(inplace = True),
+            Permute(),
 
-            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 1),
-            BatchNorm1d(256),
+            Conv2d(1, 256, kernel_size = (3, 256), stride = 1, padding = (1, 0)),
+            BatchNorm2d(256),
             ReLU(inplace = True),
+            Permute(),
 
-            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 1),
-            BatchNorm1d(256),
+            Conv2d(1, 256, kernel_size = (3, 256), stride = 1, padding = (1, 0)),
+            BatchNorm2d(256),
             ReLU(inplace = True),
+            Permute(),
 
-            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 1),
-            BatchNorm1d(256),
+            Conv2d(1, 256, kernel_size = (3, 256), stride = 1, padding = (1, 0)),
+            BatchNorm2d(256),
             ReLU(inplace = True),
+            Permute(),
 
-            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 1),
-            BatchNorm1d(256),
+            Conv2d(1, 256, kernel_size = (3, 256), stride = 1, padding = (1, 0)),
+            BatchNorm2d(256),
             ReLU(inplace = True),
-
-            Conv1d(256, 256, kernel_size = 3, stride = 1, padding = 1),
-            BatchNorm1d(256),
-            ReLU(inplace = True),
-            MaxPool1d(kernel_size = 3, stride = 3)
-            )
+            Permute(),
+            MaxPool2d(kernel_size = (3, 1), stride = (3, 1))
+        )
 
         self.linear_layers = Sequential(
             Linear(int(256 * 13), 2048),
@@ -77,12 +79,14 @@ class Net(Module):
 
     # Defining the forward pass    
     def forward(self, x):
-        x = self.cnn_initial(x)
-        x = torch.reshape(x, (x.shape[0], x.shape[1], x.shape[2]))
-        x = self.cnn_final(x)
+        x = self.cnn_layers(x)
         x = x.view(x.size(0), -1)
         x = self.linear_layers(x)
         return x
+
+class Permute(torch.nn.Module):
+    def forward(self, x):
+        return x.permute(0, 3, 2, 1)
 
 def train(model, optimizer, loss, x_train, y_train, x_val, y_val, epoch, epochs, train_losses, val_losses):
     model.train()
