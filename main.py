@@ -60,12 +60,13 @@ def main():
     val_losses = checkpoint['val_losses']
     '''
 
-    # Check for GPU Support
+    # GPU Support
     if torch.cuda.is_available():
         model = model.cuda()
         loss = loss.cuda()
 
     # Model Training
+    model.train()
     train_losses, val_losses = train(model, optimizer, loss, x_train, y_train, x_val, y_val, epoch, epochs, train_losses, val_losses)
 
     # Saving Results
@@ -86,7 +87,7 @@ def main():
     plt.figure()
     plt.plot(range(1, len(train_losses) + 1), train_losses, label = 'training loss')
     plt.plot(range(1, len(val_losses) + 1), val_losses, label = 'validation loss')
-    plt.xlabel('Epoch')
+    plt.xlabel('Iteration')
     plt.ylabel('Loss')
     plt.grid()
     plt.legend()
@@ -95,21 +96,17 @@ def main():
     # Plotting predicted vs actual values post-training
     model.eval()
 
-    # For RAM purposes, need to split validation data into two parts
     x_val1, x_val2, y_val1, y_val2 = train_test_split(x_val, y_val, test_size = 0.5)
-
-    # Model prediction values
     y_pred1 = model(x_val1)
     y_pred2 = model(x_val2)
 
-    # Plotting
     plt.figure()
-    plt.plot(range(-2, 12), range(-2, 12))
+    plt.plot(range(-2, 6), range(-2, 6))
     plt.scatter(y_val1.detach().numpy(), y_pred1.detach().numpy(), c = 'k')
     plt.scatter(y_val2.detach().numpy(), y_pred2.detach().numpy(), c = 'k')
     plt.grid()
-    plt.xlabel('Actual log(K_i)')
-    plt.ylabel('Predicted log(K_i)')
+    plt.xlabel('Actual logK_i')
+    plt.ylabel('Predicted logK_i')
     plt.savefig('Accuracy.pdf')
 
 if __name__ == '__main__':
