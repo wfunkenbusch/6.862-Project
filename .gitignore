@@ -1,5 +1,6 @@
 x_data.npy
 y_data.npy
+data_proteinase.npy
 *.pt
 .DS_Store
 .Rhistory

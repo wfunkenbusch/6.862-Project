@@ -14,87 +14,54 @@ class Net(Module):
     def __init__(self):
         super(Net, self).__init__()
 
-        # CNN for SMILES
         self.cnn_SMILES = Sequential(
-            # Standard 2D Convolutional Layer
-            # [N_data, 1, sequence_length, n_encodings]
-            Conv2d(1, 256, kernel_size = (7, 28), stride = 1, padding = (3, 0)),
-            BatchNorm2d(256),
+            # [N_data, 1, sequence_length, n_SMILES_encodings]
+            Conv2d(1, 128, kernel_size = (11, 28), stride = 1, padding = (5, 0)),
+            BatchNorm2d(128),
+            ReLU(inplace = True),
+            Permute(),
+            # [N_data, 1, sequence_length, 128]
+
+            Conv2d(1, 128, kernel_size = (7, 128), stride = 1, padding = (3, 0)),
+            BatchNorm2d(128),
             ReLU(inplace = True),
             MaxPool2d(kernel_size = (3, 1), stride = (3, 1)),
             Permute(),
-            # [N_data, 256, sequence_length/3, 1]
-
-            Conv2d(1, 256, kernel_size = (7, 256), stride = 1, padding = (3, 0)),
-            BatchNorm2d(256),
-            ReLU(inplace = True),
-            MaxPool2d(kernel_size = (3, 1), stride = (3, 1)),
-            Permute(),
-            # [N_data, 256, sequence_length/9, 1]
-
-            Conv2d(1, 256, kernel_size = (7, 256), stride = 1, padding = (3, 0)),
-            BatchNorm2d(256),
-            ReLU(inplace = True),
-            MaxPool2d(kernel_size = (3, 1), stride = (3, 1)),
-            Permute(),
-            # [N_data, 256, sequence_length/27, 1]
-
-            Conv2d(1, 256, kernel_size = (3, 256), stride = 1, padding = (1, 0)),
-            BatchNorm2d(256),
-            ReLU(inplace = True),
-            Permute(),
-
-            Conv2d(1, 256, kernel_size = (3, 256), stride = 1, padding = (1, 0)),
-            BatchNorm2d(256),
-            ReLU(inplace = True),
-            Permute(),
-
-            Conv2d(1, 256, kernel_size = (3, 256), stride = 1, padding = (1, 0)),
-            BatchNorm2d(256),
-            ReLU(inplace = True),
-            Permute(),
-
-            Conv2d(1, 256, kernel_size = (3, 256), stride = 1, padding = (1, 0)),
-            BatchNorm2d(256),
-            ReLU(inplace = True),
-            Permute(),
-
-            Conv2d(1, 256, kernel_size = (3, 256), stride = 1, padding = (1, 0)),
-            BatchNorm2d(256),
-            ReLU(inplace = True),
-            Permute(),
-
-            Conv2d(1, 256, kernel_size = (3, 256), stride = 1, padding = (1, 0)),
-            BatchNorm2d(256),
-            ReLU(inplace = True),
-            Permute(),
-            MaxPool2d(kernel_size = (3, 1), stride = (3, 1))
-            # [N_data, 256, sequence_length/51, 1]
+            # [N_data, 1, sequence_length/3, 128]
         )
 
-        # CNN for Proteins
-        self.cnn_protein = Sequential(
-            # [N_data, 1, sequence_length, n_encodings]
-            Conv2d(1, 256, kernel_size = (7, 20), stride = 1, padding = (3, 0)), #2D convolutional layer
+        self.cnn_Protein = Sequential(
+            # [N_data, 1, sequence_length, n_Protein_encodings]
+            Conv2d(1, 128, kernel_size = (11, 20), stride = 1, padding = (5, 0)),
+            BatchNorm2d(128),
+            ReLU(inplace = True),
+            Permute(),
+            # [N_data, 1, sequence_length, 128]
+
+            Conv2d(1, 128, kernel_size = (7, 128), stride = 1, padding = (3, 0)),
+            BatchNorm2d(128),
+            ReLU(inplace = True),
+            MaxPool2d(kernel_size = (3, 1), stride = (3, 1)),
+            Permute(),
+            # [N_data, 1, sequence_length/3, 128]
+        )
+
+        self.cnn_layers = Sequential(
+            # Standard 2D Convolutional Layer
+            # [N_data, 1, sequence_length, 256]
+            Conv2d(1, 256, kernel_size = (7, 256), stride = 1, padding = (3, 0)),
             BatchNorm2d(256),
             ReLU(inplace = True),
             MaxPool2d(kernel_size = (3, 1), stride = (3, 1)),
             Permute(),
-            # [N_data, 256, sequence_length/3, 1]
+            # [N_data, 1, sequence_length/9, 256]
 
             Conv2d(1, 256, kernel_size = (7, 256), stride = 1, padding = (3, 0)),
             BatchNorm2d(256),
             ReLU(inplace = True),
             MaxPool2d(kernel_size = (3, 1), stride = (3, 1)),
             Permute(),
-            # [N_data, 256, sequence_length/9, 1]
-
-            Conv2d(1, 256, kernel_size = (7, 256), stride = 1, padding = (3, 0)),
-            BatchNorm2d(256),
-            ReLU(inplace = True),
-            MaxPool2d(kernel_size = (3, 1), stride = (3, 1)),
-            Permute(),
-            # [N_data, 256, sequence_length/27, 1]
+            # [N_data, 1, sequence_length/27, 256]
 
             Conv2d(1, 256, kernel_size = (3, 256), stride = 1, padding = (1, 0)),
             BatchNorm2d(256),
@@ -124,7 +91,6 @@ class Net(Module):
             Conv2d(1, 256, kernel_size = (3, 256), stride = 1, padding = (1, 0)),
             BatchNorm2d(256),
             ReLU(inplace = True),
-            Permute(),
             MaxPool2d(kernel_size = (3, 1), stride = (3, 1))
             # [N_data, 256, sequence_length/51, 1]
         )
@@ -142,19 +108,13 @@ class Net(Module):
 
     # Defining the forward pass    
     def forward(self, x):
-        # Splitting data into SMILES and Protein
-        x1 = x[:, :, 0:100, 0:28]
-        x2 = x[:, :, 100:, 28:]
-
-        # CNN for Each
-        x1 = self.cnn_SMILES(x1)
-        x2 = self.cnn_protein(x2)
-
-        # Recombining
-        x = torch.cat((x1, x2), dim = 2)
+        x_SMILES = x[:, :, :, 0:28]
+        x_Protein = x[:, :, :, 28:]
+        x_SMILES = self.cnn_SMILES(x_SMILES)
+        x_Protein = self.cnn_Protein(x_Protein)
+        x = torch.cat((x_SMILES, x_Protein), dim = 3)
+        x = self.cnn_layers(x)
         x = x.view(x.size(0), -1)
-
-        # Fully-Connected Layers
         x = self.linear_layers(x)
         return x
 
@@ -224,7 +184,8 @@ def train(model, optimizer, loss, x_train0, y_train0, x_val0, y_val0, epoch, epo
         # Saving Model
         if i % 100 == 0:
             torch.save({'epochs': epoch + epochs,
-                        'model_state_dict': optimizer.state_dict(),
+                        'model_state_dict': model.state_dict(),
+                        'optimizer_state_dict': optimizer.state_dict(),
                         'loss': loss,
                         'x_train': x_train0,
                         'y_train': y_train0,
