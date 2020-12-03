@@ -4,7 +4,7 @@
 import numpy as np
 from scipy import sparse
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
 
 import torch
 from torch.nn import Linear, ReLU, MSELoss, Sequential, Conv2d, MaxPool2d, Module, BatchNorm2d
@@ -31,7 +31,6 @@ def main():
     loss = MSELoss()
 
     ############## If Training New Model
-    '''
     # Load data
     x_data = np.load('x_data.npy')
     y_data = np.load('y_data.npy')
@@ -54,7 +53,6 @@ def main():
 
     # Get data and split into training and validation
     x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size = test_size)
-    '''
 
     ############## If Loading from Previous Run
     checkpoint = torch.load('model.pt')
@@ -69,6 +67,7 @@ def main():
     train_losses = checkpoint['train_losses']
     val_losses = checkpoint['val_losses']
 
+    # To Update Learning Rate
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
@@ -77,10 +76,20 @@ def main():
         model = model.cuda()
         loss = loss.cuda()
 
+    # IF CROSS VALIDATING FOR MODEL
+    '''
+    params = [128, 64, 32, 16]
+    best_params, _, _ = cross_val_model(lr, loss, x_train, y_train, params)
+
+    model = Net(best_params[0], best_params[1])
+    optimizer = Adam(model.parameters(), lr = lr)
+    '''
+
     # Model Training
-    train_losses, val_losses = train(model, optimizer, loss, x_train, y_train, x_val, y_val, epoch, epochs, train_losses, val_losses)
+    train_losses, val_losses = train_model(model, optimizer, loss, x_train, y_train, x_val, y_val, epoch, epochs)
 
     # Saving Result
+    '''
     torch.save({
             'epochs': epoch + epochs,
             'model_state_dict': model.state_dict(),
@@ -93,6 +102,7 @@ def main():
             'train_losses': train_losses,
             'val_losses': val_losses
             }, 'model.pt')
+    '''
 
     # Plotting losses as function of epoch
     plt.rc('axes', axisbelow = True)
@@ -121,11 +131,11 @@ def main():
     print('Validation Loss: ', val_loss)
 
     plt.figure()
-    plt.plot(range(-4, 5), range(-4, 5), 'k')
-    plt.plot(range(-4, 5), range(-3, 6), 'r-')
-    plt.plot(range(-4, 5), range(-5, 4), 'r-')
-    plt.scatter(y_val1.detach().numpy(), y_pred1.detach().numpy(), s = 1,  c = 'royalblue')
-    plt.scatter(y_val2.detach().numpy(), y_pred2.detach().numpy(), s = 1, c = 'royalblue')
+    plt.plot(range(4, 13), range(4, 13), 'k')
+    plt.plot(range(4, 13), range(4, 13), 'r-')
+    plt.plot(range(4, 13), range(4, 13), 'r-')
+    plt.scatter(-y_val1.detach().numpy() + 9, -y_pred1.detach().numpy() + 9, s = 1,  c = 'royalblue')
+    plt.scatter(-y_val2.detach().numpy() + 9, -y_pred2.detach().numpy() + 9, s = 1, c = 'royalblue')
     plt.grid()
     plt.xlabel('Actual $log(K_i)$')
     plt.ylabel('Predicted $log(K_i)$')
